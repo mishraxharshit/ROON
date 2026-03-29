@@ -70,8 +70,6 @@ def main():
             print("Mac icon: assets/app.icns")
             shutil.rmtree(iconset_dir)
         else:
-            # Fallback: copy PNG as icns placeholder
-            import shutil
             shutil.copy("assets/app_512.png", "assets/app.icns")
             print("Mac icon (PNG fallback): assets/app.icns")
     except FileNotFoundError:
