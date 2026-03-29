@@ -45,26 +45,29 @@ jobs:
 
   build-mac:
     name: macOS App
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Python with tkinter
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install tkinter and tools
         run: |
-          brew install python-tk@3.11
+          brew install python-tk@3.11 || true
           brew install create-dmg || true
 
       - name: Install Python dependencies
-        run: |
-          python3.11 -m pip install --upgrade pip
-          python3.11 -m pip install pymupdf pillow pyinstaller
+        run: pip install pymupdf pillow pyinstaller
 
       - name: Generate icon
-        run: python3.11 generate_icon.py
+        run: python generate_icon.py
 
       - name: Build Mac App
         run: |
-          python3.11 -m PyInstaller --onefile --windowed \
+          pyinstaller --onefile --windowed \
             --name "Roon" \
             --add-data "assets:assets" \
             --hidden-import tkinter \
