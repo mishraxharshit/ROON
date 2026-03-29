@@ -1,0 +1,158 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g. 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+
+  build-windows:
+    name: Windows EXE
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pymupdf pillow pyinstaller
+
+      - name: Generate icon
+        run: python generate_icon.py
+
+      - name: Build Windows EXE
+        run: |
+          pyinstaller --onefile --windowed `
+            --name "Roon" `
+            --icon "assets/app.ico" `
+            --add-data "assets;assets" `
+            --hidden-import PIL._tkinter_finder `
+            pdf_reader.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-exe
+          path: dist/Roon.exe
+
+  build-mac:
+    name: macOS App
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pymupdf pillow pyinstaller
+          brew install create-dmg || echo "create-dmg not available"
+
+      - name: Generate icon
+        run: python generate_icon.py
+
+      - name: Build Mac App
+        run: |
+          pyinstaller --onefile --windowed \
+            --name "Roon" \
+            --add-data "assets:assets" \
+            pdf_reader.py
+
+      - name: Package DMG
+        run: |
+          mkdir -p dist_dmg
+          if [ -d "dist/Roon.app" ]; then
+            create-dmg \
+              --volname "Roon" \
+              --window-size 600 400 \
+              --icon-size 100 \
+              --app-drop-link 425 190 \
+              "dist/Roon-macOS.dmg" \
+              "dist/Roon.app" 2>/dev/null || \
+            zip -r "dist/Roon-macOS.zip" "dist/Roon.app"
+          else
+            zip -j "dist/Roon-macOS.zip" "dist/Roon"
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-build
+          path: |
+            dist/*.dmg
+            dist/*.zip
+            dist/*.app
+
+  release:
+    name: Create GitHub Release
+    needs: [build-windows, build-mac]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        id: ver
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Download Windows build
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-exe
+          path: release/
+
+      - name: Download Mac build
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-build
+          path: release/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Roon v${{ steps.ver.outputs.VERSION }}
+          body: |
+            ## Roon v${{ steps.ver.outputs.VERSION }}
+
+            A professional PDF viewer with book-style page flip animation.
+
+            ### Downloads
+
+            | Platform | File |
+            |----------|------|
+            | Windows  | `Roon.exe` — portable, no install needed |
+            | macOS    | `Roon-macOS.dmg` or `.zip` |
+
+            ### Features
+            - Book-style page flip animation
+            - 11 languages supported
+            - Fast page cache & background rendering
+            - Thumbnail sidebar
+            - Zoom, fit page, fit width
+            - Keyboard navigation
+            - Remembers language preference
+
+            ### How to Run
+            **Windows:** Download `.exe` and double-click. No install needed.
+            **macOS:** Download `.dmg`, drag app to Applications, then open.
+          files: release/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

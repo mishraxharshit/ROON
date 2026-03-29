@@ -1,0 +1,78 @@
+
+╔══════════════════════════════════════════════════════════════╗
+║         Roon - GitHub Setup Guide                 ║
+║         Apna repo banayein aur app publish karein            ║
+╚══════════════════════════════════════════════════════════════╝
+
+━━━ STEP 1: GitHub Par Repo Banayein ━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. https://github.com par jayein aur login karein
+2. Top-right "+" button click karein → "New repository"
+3. Fill karein:
+     Repository name:  roon
+     Description:      Professional PDF viewer with book-style page flip
+     Visibility:       Public ✓
+     Add README:       NAHI (hum apna daalenge)
+4. "Create repository" click karein
+
+━━━ STEP 2: Git Install Karein (agar nahi hai) ━━━━━━━━━━━━━━
+
+  Windows: https://git-scm.com/download/win
+  Mac:     brew install git
+  Linux:   sudo apt install git
+
+━━━ STEP 3: Pehli Baar GitHub Ko Setup Karein ━━━━━━━━━━━━━━━
+
+  Command Prompt / Terminal mein:
+
+  git config --global user.name  "Aapka Naam"
+  git config --global user.email "aapka@email.com"
+
+━━━ STEP 4: Project Folder Mein Push Karein ━━━━━━━━━━━━━━━━━
+
+  Is folder (Roon) mein Command Prompt kholein:
+  (Shift + Right Click → "Open in Terminal")
+
+  git init
+  git add .
+  git commit -m "Initial release: Roon v1.0"
+  git branch -M main
+  git remote add origin https://github.com/YOUR_USERNAME/roon.git
+  git push -u origin main
+
+  NOTE: "YOUR_USERNAME" apne GitHub username se replace karein!
+
+━━━ STEP 5: README Mein Apna Username Dalein ━━━━━━━━━━━━━━━━
+
+  README.md file mein "YOUR_USERNAME" ko apne username se replace karein.
+  Aap GitHub.com par bhi directly edit kar sakte hain.
+
+━━━ STEP 6: Release Build Trigger Karein ━━━━━━━━━━━━━━━━━━━━
+
+  Windows EXE aur Mac DMG automatically build honge!
+
+  git tag v1.0.0
+  git push origin v1.0.0
+
+  Phir GitHub → Actions tab mein dekho — build shuru ho jayega.
+  ~5-10 minutes mein Releases mein .exe aur .dmg milenge.
+
+━━━ WINDOWS SECURITY WARNING FIX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Jab "Windows protected your PC" aaye:
+  1. "More info" click karein
+  2. "Run anyway" click karein
+
+  Ya right-click → Properties → "Unblock" checkbox tick karein
+
+━━━ KEYBOARD SHORTCUTS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Ctrl+O       PDF kholein
+  ← →          Page badlen
+  Ctrl++/-     Zoom in/out
+  F            Page fit
+  W            Width fit
+  Home/End     Pehla/Aakhri page
+  Esc          Quit
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
